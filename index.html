@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Throwable</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 28px;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .tree ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        .tree li {
+            margin: 0;
+            padding: 10px 15px;
+            line-height: 1.8em;
+            font-weight: normal;
+            position: relative;
+            border-left: 2px solid #ccc;
+            transition: all 0.3s ease;
+        }
+        .tree li > span {
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background-color: #e3f2fd;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-size: 16px;
+        }
+        .tree li > span:hover {
+            background-color: #42a5f5;
+            color: white;
+        }
+        .tree ul.collapsed {
+            display: none;
+        }
+        .tree li:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -10px;
+            border-left: 2px solid #ccc;
+            border-bottom: 2px solid #ccc;
+            width: 10px;
+            height: 10px;
+            transform: rotate(45deg);
+            background: white;
+        }
+        .tree li:last-child:before {
+            display: none;
+        }
+        .tree ul > li {
+            margin-left: 20px;
+        }
+        .expandable::before {
+            content: '+';
+            color: #42a5f5;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .expanded::before {
+            content: '-';
+            color: #42a5f5;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Throwable</h1>
+        <div class="tree" id="tree"></div>
+        <div class="footer">Interactive tree visualization. Click on items to expand or view details.</div>
+    </div>
+
+    <script>
+        fetch('data.json') // Replace 'data.json' with the path to your JSON file
+            .then(response => response.json())
+            .then(jsonData => {
+                function createTreeNode(node) {
+                    const li = document.createElement('li');
+                    const span = document.createElement('span');
+                    span.textContent = node.name;
+                    li.appendChild(span);
+
+                    if (node.children && node.children.length > 0) {
+                        const ul = document.createElement('ul');
+                        node.children.forEach(child => {
+                            ul.appendChild(createTreeNode(child));
+                        });
+                        li.appendChild(ul);
+                        ul.classList.add('collapsed');
+
+                        span.classList.add('expandable');
+                        span.addEventListener('click', () => {
+                            ul.classList.toggle('collapsed');
+                            span.classList.toggle('expanded');
+                            span.classList.toggle('expandable');
+                        });
+                    } else if (node.info) {
+                        span.addEventListener('click', () => {
+                            window.location.href = `details.html?info=${encodeURIComponent(JSON.stringify(node.info))}&name=${encodeURIComponent(node.name)}`;
+                        });
+                    }
+
+                    return li;
+                }
+
+                const treeContainer = document.getElementById('tree');
+                const ul = document.createElement('ul');
+                ul.appendChild(createTreeNode(jsonData));
+                treeContainer.appendChild(ul);
+            })
+            .catch(error => console.error('Error loading JSON:', error));
+    </script>
+</body>
+</html>
